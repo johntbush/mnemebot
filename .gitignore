@@ -1,0 +1,5 @@
+.venv
+target
+project/target
+deploy
+admin.pem
