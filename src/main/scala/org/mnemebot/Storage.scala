@@ -3,7 +3,7 @@ package org.mnemebot
 import java.io._
 import java.util.Base64
 import java.nio.charset.StandardCharsets.UTF_8
-
+import collection.mutable.{ HashMap, MultiMap, Set }
 import scala.io.Source
 import scala.util.Try
 
@@ -13,24 +13,28 @@ object Storage {
 
   def add(key:String, value:String) = {
     System.out.println("adding " + key)
-    data += key ->value
+    data.addBinding(key, value)
     storeData(fileName)
     data
   }
 
-  def defaultData() = {
-    Map(
-      "hillary" -> "Lock her up!",
-      "bill" -> "Bill is a rapist!",
-      "acosta" -> "Acosta is a jerk!",
-      "monica" -> "Where is that cigar!",
-      "kavanaugh" -> "I need a beer!"
-    )
+  def reset() = {
+    data = defaultData()
+  }
+
+  def defaultData():MultiMap[String, String] = {
+    val mm = new HashMap[String, Set[String]] with MultiMap[String, String]
+    mm.addBinding("hillary", "Lock her up!")
+    mm.addBinding("bill", "Bill is a rapist!")
+    mm.addBinding("acosta", "Acosta is a jerk!")
+    mm.addBinding("monica", "Where is that cigar!")
+    mm.addBinding("kavanaugh", "I need a beer!")
+    mm
   }
 
   def remove(key:String) = {
     System.out.println("removing " + key)
-    data -= key
+    data.remove(key)
     storeData(fileName)
     data
   }
@@ -38,7 +42,7 @@ object Storage {
   def loadData(file:String = fileName) = {
     Try {
       val data = Source.fromFile(file).mkString
-      deserialise(data).asInstanceOf[Map[String, String]]
+      deserialise(data).asInstanceOf[MultiMap[String, String]]
     }.toOption.getOrElse(defaultData())
   }
 

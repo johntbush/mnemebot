@@ -13,4 +13,5 @@ libraryDependencies += "com.bot4s" %% "telegram-akka" % "4.0.0-RC2"
 // https://mvnrepository.com/artifact/junit/junit
 libraryDependencies += "junit" % "junit" % "4.10" % Test
 
+
 enablePlugins(JavaAppPackaging)
