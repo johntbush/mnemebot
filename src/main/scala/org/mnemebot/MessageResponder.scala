@@ -3,19 +3,30 @@ package org.mnemebot
 import java.io._
 import java.util.Base64
 import java.nio.charset.StandardCharsets.UTF_8
-import collection.mutable.{ HashMap, MultiMap, Set }
-import scala.io.Source
-import scala.util.Try
 
-object Storage {
+import collection.mutable.{HashMap, MultiMap, Set}
+import scala.io.Source
+import scala.util.{Random, Try}
+
+object MessageResponder {
   val fileName = "message.data"
   var data = loadData(fileName)
+  val random = new Random
 
   def add(key:String, value:String) = {
     System.out.println("adding " + key)
     data.addBinding(key, value)
     storeData(fileName)
     data
+  }
+
+  def getRandomElement(list: Seq[String], random: Random = random): String = list(random.nextInt(list.length))
+
+  def getRandomResponse(msg:String) = {
+    Random.shuffle(data)
+      .find { case (k, v) => msg.toLowerCase().contains(k)}
+      .map { case (k, v) => getRandomElement(v.toSeq) }
+
   }
 
   def reset() = {
@@ -30,6 +41,10 @@ object Storage {
     mm.addBinding("monica", "Where is that cigar!")
     mm.addBinding("kavanaugh", "I need a beer!")
     mm
+  }
+
+  def keys = {
+    data.keys
   }
 
   def remove(key:String) = {

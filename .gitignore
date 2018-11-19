@@ -1,5 +1,7 @@
 .venv
 target
+.idea
 project/target
 deploy
 admin.pem
+.DS_Store
