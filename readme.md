@@ -39,7 +39,18 @@ Generates wikileak links and trolls your channel:
 
 ```
 # Build
+
+uses sbt native packager, make whatever you want. Make yourself a DMG if that is how you roll...
+
+## make a zip package
+
 `sbt universal:packageBin`
+
+## make a container
+
+`sbt docker:publishLocal`
+
+For more options with docker see https://www.scala-sbt.org/sbt-native-packager/formats/docker.html#build
 
 # Configure
 
@@ -53,9 +64,6 @@ Look at the sql.ddl file, you want to make adjustments
 - java 1.8+
 
 # Run
-
-Sorry I don't have a damn container for you, this crap is easy enough to just copy and fire up, 
-you want a container, you little baby, go ahead and submit a PR.
 
 ```
 unzip target/universal/mnemebot-0.1.zip
