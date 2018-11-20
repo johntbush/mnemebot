@@ -45,6 +45,9 @@ Generates wikileak links and trolls your channel:
  /podesta args | /pod args - generate link to search podestra emails
 
 ```
+
+Note: using key:response in the /add verses using space delim like `/add key response` is significant.  It allows you to associate many words with a response at once.  `/add red orange blue:So you like colors?` . A string with red, orange, or blue in the message would cause your response to be found.
+
 # Build
 
 uses sbt native packager, make whatever you want. Make yourself a DMG if that is how you roll...
@@ -69,6 +72,8 @@ Look at the sql.ddl file, you want to make adjustments
 
 - mysql 5.7+
 - java 1.8+
+
+This first go around is using mysql's full text search.  Its simple and seems to works ok so far, we will see how long that sticks around, but its nice a cheap way to get started.
 
 # Run
 
