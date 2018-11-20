@@ -17,7 +17,6 @@ object Troll extends SQLSyntaxSupport[Troll] {
 object MessageResponder {
   implicit val session = SqlConnection.session
 
-  val fileName = "message.data"
   val random = new Random
 
   def add(key:String, value:String, userOpt:Option[String] = None):Unit = {
