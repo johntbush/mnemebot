@@ -10,6 +10,12 @@ If the bot finds a match for a trolling string it has in its database, it will r
 
 The inline part of the system is like @gif feature of telegram, only you can seed it with what content you want.  
 
+# About the name
+
+MemeBot was taken.  I always spell it wrong anyway, and turns out Mneme is a thing in Greek mythology.
+So that makes me all clever and shit, https://en.wikipedia.org/wiki/Mneme. Somehow the Muse of memory could
+be related to a bot.  I don't know exactly how, I'll leave as an exercise for the reader.
+
 # Tech Stuff
 
 The bot is written in Scala.  Backend storage is MySQL.
