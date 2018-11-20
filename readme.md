@@ -1,5 +1,56 @@
+# WTF is this
+
+This is a Telegram bot.  You can use it to annoy the hell out of people.
+
+It has a few commands to add data or find wikileaks link to annoy people.
+
+You can add configuration that will fire when messages are sent to a channel the bot is part of.
+
+If the bot finds a match for a trolling string it has in its database, it will reply with a message.
+
+The inline part of the system is like @gif feature of telegram, only you can seed it with what content you want.  
+
+# Tech Stuff
+
+The bot is written in Scala.  Backend storage is MySQL.
+It will easily run on a free tier box.
+Image scraping is done via python, more below. This is to seed the inline @MnemeBot feature.
+You could create a UI to do this, or use other scripts.
+
+The bot itself is a single process.  
+You need to create your database, and seed it with whatever you want.
+
+```
+Generates wikileak links and trolls your channel:
+
+ /start | /help - list commands
+
+ @MnemeBot meme search
+
+ /hrc args - generate link to search hrc emails
+
+ /dump prints out known keys in the message scrubber
+
+ /del key - remove key from scrubber
+
+ /add key:response - adds new key,values to match against when searching messages (include urls and links to menes)
+
+ /podesta args | /pod args - generate link to search podestra emails
+
+```
 # Build
 `sbt universal:packageBin`
+
+# Configure
+
+Look at the sql.ddl file, you want to make adjustments
+
+`mysql -u root < src/main/resources/sql.ddl`
+
+# Dependencies
+
+- mysql 5.7+
+- java 1.8+
 
 # Run
 ```
@@ -17,7 +68,8 @@ Old school web scraping tools don't work well anymore because so much html is re
 
 ## dependencies
 
-install google chrome canary - https://www.google.com/chrome/canary/
+- python3
+- google chrome canary - https://www.google.com/chrome/canary/
 
 ## init environment
 
