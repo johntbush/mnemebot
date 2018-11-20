@@ -82,7 +82,7 @@ unzip target/universal/mnemebot-0.1.zip
 mnemebot-0.1/bin/mnemebot <api_token>
 ```
 
-# run image scraper
+# Image Scraper
 
 Using selenium and the google chrome canary browser create scripts
 that look for image urls.  The scrape.py is an example which dumps mysql insert statements, 
