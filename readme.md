@@ -64,7 +64,7 @@ For more options with docker see https://www.scala-sbt.org/sbt-native-packager/f
 
 # Configure
 
-Look at the sql.ddl file, you want to make adjustments
+Look at the [sql.ddl](https://github.com/johntbush/mnemebot/blob/master/src/main/resources/sql.ddl) file, you want to make adjustments
 
 `mysql -u root < src/main/resources/sql.ddl`
 
