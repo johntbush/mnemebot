@@ -53,6 +53,10 @@ Look at the sql.ddl file, you want to make adjustments
 - java 1.8+
 
 # Run
+
+Sorry I don't have a damn container for you, this crap is easy enough to just copy and fire up, 
+you want a container, you little baby, go ahead and submit a PR.
+
 ```
 unzip target/universal/mnemebot-0.1.zip
 mnemebot-0.1/bin/mnemebot <api_token>
