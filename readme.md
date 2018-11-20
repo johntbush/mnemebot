@@ -1,6 +1,6 @@
-# WTF is this
+# WTF is this ?
 
-This is a [Telegram|https://telegram.org/] bot.  You can use it to annoy the hell out of people.
+This is a [Telegram](https://telegram.org/) bot.  You can use it to annoy the hell out of people.
 
 It has a few commands to add data or find wikileaks link to annoy people.
 
