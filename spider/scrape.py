@@ -29,7 +29,7 @@ def url_filter(link, seen_links):
   try:
     if link.get_attribute("href") and link.get_attribute("href").startswith('http'):
       href = link.get_attribute("href")
-      if (href not in seen_links):
+      if href not in seen_links and not any(x in href for x in ['thumb','icon','svg']):
         tld = tldextract.extract(href)
         seen_links.append(href)
         if tld.domain not in ['google']:
@@ -38,6 +38,8 @@ def url_filter(link, seen_links):
     return False
   except:
     return False
+
+def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
 if __name__ == '__main__':
   args = docopt(__doc__)
@@ -55,7 +57,8 @@ if __name__ == '__main__':
   for link in links:
     driver.get(link)
     driver.implicitly_wait(3)
+    title = driver.title
+
     images = [image.get_attribute("src") for image in driver.find_elements_by_xpath("//img") if image_filter(image)]
     for image in images:
-      for tag in tags:
-        print("INSERT IGNORE INTO IMAGE (source, image_src, tag, source_type) values ('{}','{}','{}','spider');".format(link, image, tag))
+      print("INSERT IGNORE INTO image (source, image_src, tags, source_type, title) values ('{}','{}','{}','spider','{}');".format(link, image, " ".join(tags), removeNonAscii(title).replace("'","''")))

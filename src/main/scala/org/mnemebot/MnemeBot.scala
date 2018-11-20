@@ -100,7 +100,7 @@ class MnemeBot(token: String) extends ExampleBot(token)
     if (msg.text.isDefined) {
       val args = msg.text.get.replaceFirst("/add","").trim()
       val data = args.split(":")
-      MessageResponder.add(data(0), data.tail.mkString(""))
+      MessageResponder.add(data(0), data.tail.mkString(""), msg.from.flatMap(_.username))
     }
   }
 
@@ -135,6 +135,7 @@ class MnemeBot(token: String) extends ExampleBot(token)
       val results = MemeService.getRandomImages(query).map { image =>
         InlineQueryResultGif(
           id = DigestUtils.sha256Hex(image.imageSrc),
+          title = Option(image.title),
           gifUrl = image.imageSrc,
           thumbUrl = image.imageSrc,
         )

@@ -6,20 +6,19 @@ class MyTests {
   @Test
   def testMesageResponder():Unit = {
     MessageResponder.reset()
-    assert(MessageResponder.data("monica").size == 1)
-    println(MessageResponder.data)
+    MessageResponder.getRandomResponse("monica")
+    assert(MessageResponder.getAllTrolls("monica").size == 1)
 
     MessageResponder.add("monica","blah")
-    println(MessageResponder.data)
-    assert(MessageResponder.data("monica").size == 2)
+    assert(MessageResponder.getAllTrolls("monica").size == 2)
 
     MessageResponder.remove("monica")
-    assert(MessageResponder.data.get("monica").isEmpty)
+    assert(MessageResponder.getAllTrolls("monica").isEmpty)
   }
 
   @Test
   def testMemeService() = {
     assert(MemeService.getRandomImageForTag("cortez").isDefined )
-    assert(!(MemeService.getRandomImageForTag("cortez").get.imageSrc.equals((MemeService.getRandomImageForTag("cortez").get.imageSrc))))
+    assert(MemeService.getImagesForTag("cortez").size > 1)
   }
 }

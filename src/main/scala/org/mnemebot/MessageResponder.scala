@@ -1,88 +1,64 @@
 package org.mnemebot
-
-import java.io._
-import java.util.Base64
-import java.nio.charset.StandardCharsets.UTF_8
+import com.bot4s.telegram.models.User
+import scalikejdbc._
 
 import collection.mutable.{HashMap, MultiMap, Set}
 import scala.io.Source
 import scala.util.{Random, Try}
 
+
+case class Troll(id: Int, message: String, tags:String)
+object Troll extends SQLSyntaxSupport[Troll] {
+  override val tableName = "troll"
+  def apply(rs: WrappedResultSet) = new Troll(
+    rs.int("id"), rs.string("message"), rs.string("tags"))
+}
+
 object MessageResponder {
+  implicit val session = SqlConnection.session
+
   val fileName = "message.data"
-  var data = loadData(fileName)
   val random = new Random
 
-  def add(key:String, value:String) = {
+  def add(key:String, value:String, userOpt:Option[String] = None):Unit = {
     System.out.println("adding " + key)
-    data.addBinding(key, value)
-    storeData(fileName)
-    data
+    val user = userOpt.getOrElse("")
+    sql"insert into troll (tags, message, username, created) values ($key, $value, $user, now())".update.apply()
   }
 
   def getRandomElement(list: Seq[String], random: Random = random): String = list(random.nextInt(list.length))
 
-  def getRandomResponse(msg:String) = {
-    Random.shuffle(data)
-      .find { case (k, v) => msg.toLowerCase().contains(k)}
-      .map { case (k, v) => getRandomElement(v.toSeq) }
+  def getAllTrolls(msg:String) = {
+    sql"select id, message, tags from troll where match(tags) against ($msg IN NATURAL LANGUAGE MODE)".map(rs => Troll(rs)).list.apply()
+  }
 
+  def getRandomResponse(msg:String) = {
+    Random
+      .shuffle(getAllTrolls(msg))
+      .headOption
+      .map(_.message)
   }
 
   def reset() = {
-    data = defaultData()
+    sql"truncate troll".update().apply()
+    insertDefaultData()
   }
 
-  def defaultData():MultiMap[String, String] = {
-    val mm = new HashMap[String, Set[String]] with MultiMap[String, String]
-    mm.addBinding("hillary", "Lock her up!")
-    mm.addBinding("bill", "Bill is a rapist!")
-    mm.addBinding("acosta", "Acosta is a jerk!")
-    mm.addBinding("monica", "Where is that cigar!")
-    mm.addBinding("kavanaugh", "I need a beer!")
-    mm
+  def insertDefaultData():Unit = {
+    add("hillary", "Lock her up!")
+    add("bill", "Bill is a rapist!")
+    add("acosta", "Acosta is a jerk!")
+    add("monica", "Where is that cigar!")
+    add("kavanaugh", "I need a beer!")
   }
 
   def keys = {
-    data.keys
+    sql"select id, tags, message from troll".map(rs => Troll(rs)).list.apply()
+      .map(_.tags.split(" ")).flatten.toSet
   }
 
   def remove(key:String) = {
-    System.out.println("removing " + key)
-    data.remove(key)
-    storeData(fileName)
-    data
+    sql"delete from troll where match(tags) against ($key IN NATURAL LANGUAGE MODE)".update().apply()
   }
 
-  def loadData(file:String = fileName) = {
-    Try {
-      val data = Source.fromFile(file).mkString
-      deserialise(data).asInstanceOf[MultiMap[String, String]]
-    }.toOption.getOrElse(defaultData())
-  }
-
-  def storeData(file:String) ={
-    val writer = new PrintWriter(new File(fileName))
-    writer.write(serialise(data))
-    writer.close()
-  }
-
-  def serialise(value: Any): String = {
-    val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-    val oos = new ObjectOutputStream(stream)
-    oos.writeObject(value)
-    oos.close
-    new String(
-      Base64.getEncoder().encode(stream.toByteArray),
-      UTF_8
-    )
-  }
-
-  def deserialise(str: String): Any = {
-    val bytes = Base64.getDecoder().decode(str.getBytes(UTF_8))
-    val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
-    val value = ois.readObject
-    ois.close
-    value
-  }
 }
