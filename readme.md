@@ -8,7 +8,8 @@ You can add configuration that will fire when messages are sent to a channel the
 
 If the bot finds a match for a trolling string it has in its database, it will reply with a message.
 
-The inline part of the system is like @gif feature of telegram, only you can seed it with what content you want.  
+The inline part of the system is like @gif feature of telegram, only you can seed it with what content you want, 
+I am going to send super annoying politcal menes to people and really irritate them, you do whatever you like.
 
 # About the name
 
