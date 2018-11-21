@@ -26,5 +26,6 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 // https://mvnrepository.com/artifact/commons-codec/commons-codec
 libraryDependencies += "commons-codec" % "commons-codec" % "1.9"
 
+libraryDependencies += "org.apache.commons" % "commons-collections4" % "4.1"
 
 enablePlugins(JavaAppPackaging)

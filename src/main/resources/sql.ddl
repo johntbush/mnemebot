@@ -26,5 +26,5 @@ create table bot.troll (
   primary KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
 CREATE FULLTEXT INDEX troll_tags ON troll (tags);
+

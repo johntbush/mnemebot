@@ -1,9 +1,8 @@
 package org.mnemebot
 import com.bot4s.telegram.models.User
+import org.apache.commons.collections4.map.PassiveExpiringMap
 import scalikejdbc._
 
-import collection.mutable.{HashMap, MultiMap, Set}
-import scala.io.Source
 import scala.util.{Random, Try}
 
 
@@ -16,7 +15,7 @@ object Troll extends SQLSyntaxSupport[Troll] {
 
 object MessageResponder {
   implicit val session = SqlConnection.session
-
+  val recentTrolls = new PassiveExpiringMap[Int, Troll](1000*60*5)
   val fileName = "message.data"
   val random = new Random
 
@@ -36,7 +35,11 @@ object MessageResponder {
     Random
       .shuffle(getAllTrolls(msg))
       .headOption
-      .map(_.message)
+      .filter( troll => !recentTrolls.containsKey(troll.id))
+      .map { troll =>
+        recentTrolls.put(troll.id, troll)
+        troll.message
+      }
   }
 
   def reset() = {

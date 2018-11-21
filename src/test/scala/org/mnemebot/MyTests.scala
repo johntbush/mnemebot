@@ -17,6 +17,17 @@ class MyTests {
   }
 
   @Test
+  def testMesageResponderSpam():Unit = {
+    MessageResponder.reset()
+    MessageResponder.getRandomResponse("monica")
+    assert(MessageResponder.getRandomResponse("monica").isEmpty)
+    MessageResponder.add("monica","blah")
+    assert(MessageResponder.getRandomResponse("monica").isDefined)
+    assert(MessageResponder.getRandomResponse("monica").isEmpty)
+  }
+
+
+  @Test
   def testMemeService() = {
     assert(MemeService.getRandomImageForTag("cortez").isDefined )
     assert(MemeService.getImagesForTag("cortez").size > 1)
