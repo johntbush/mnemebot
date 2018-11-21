@@ -10,7 +10,7 @@ import com.bot4s.telegram.models._
 import org.apache.commons.codec.digest.DigestUtils
 
 /**
-  * Let me Google that for you!
+  * Let me annoy the shit out of you and everyone on this channel
   */
 class MnemeBot(token: String) extends ExampleBot(token)
   with Polling

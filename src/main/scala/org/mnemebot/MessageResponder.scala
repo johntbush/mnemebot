@@ -1,9 +1,8 @@
 package org.mnemebot
-import com.bot4s.telegram.models.User
 import org.apache.commons.collections4.map.PassiveExpiringMap
 import scalikejdbc._
 
-import scala.util.{Random, Try}
+import scala.util.Random
 
 
 case class Troll(id: Int, message: String, tags:String)

@@ -1,14 +1,6 @@
 #!/bin/bash
 
 # Configure git submodule goodies
-echo "*******************************************************************************"
-echo "*******************************************************************************"
-echo
-echo                       C360 Deployment Repository Setup
-echo
-echo "*******************************************************************************"
-echo "*******************************************************************************"
-echo
 
 echo Configuring git to automatically update submodules.
 git config --local submodule.recurse true # fetch/pull also sync up subnodules 
