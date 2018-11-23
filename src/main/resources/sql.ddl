@@ -1,6 +1,6 @@
 
-CREATE USER 'admin'@'localhost' IDENTIFIED  BY 'admin';
-GRANT ALL PRIVILEGES ON * . * TO 'admin'@'localhost';
+CREATE USER 'admin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'admin';
+GRANT ALL PRIVILEGES ON bot.* TO 'admin'@'localhost';
 flush privileges;
 CREATE DATABASE bot;
 

@@ -1,10 +1,10 @@
 package org.mnemebot
 
-import org.junit.Test
+import org.scalatest.FunSuite
 
-class MyTests {
-  @Test
-  def testMesageResponder():Unit = {
+class MyTests extends FunSuite {
+
+  test("basic MessageResponder test") {
     MessageResponder.reset()
     MessageResponder.getRandomResponse("monica")
     assert(MessageResponder.getAllTrolls("monica").size == 1)
@@ -16,8 +16,7 @@ class MyTests {
     assert(MessageResponder.getAllTrolls("monica").isEmpty)
   }
 
-  @Test
-  def testMesageResponderSpam():Unit = {
+  test("test MessageResponder spam filter") {
     MessageResponder.reset()
     MessageResponder.getRandomResponse("monica")
     assert(MessageResponder.getRandomResponse("monica").isEmpty)
@@ -26,9 +25,14 @@ class MyTests {
     assert(MessageResponder.getRandomResponse("monica").isEmpty)
   }
 
+  test("test lookups with the MemeService") {
+    MemeService.reset()
+    import scalikejdbc._
+    implicit val session = SqlConnection.session
 
-  @Test
-  def testMemeService() = {
+    sql"insert into image (image_src, source, source_type, tags, title) values ('http://we.com/1','manual','uri','cortez','blah blah')".update().apply()
+    sql"insert into image (image_src, source, source_type, tags, title) values ('http://we.com/2','manual','uri','cortez','blah blah 2')".update().apply()
+
     assert(MemeService.getRandomImageForTag("cortez").isDefined )
     assert(MemeService.getImagesForTag("cortez").size > 1)
   }

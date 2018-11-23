@@ -4,6 +4,8 @@ version := "0.1"
 
 scalaVersion := "2.12.7"
 
+maintainer := "johntylerbush@gmail.com"
+
 // Core with minimal dependencies, enough to spawn your first bot.
 libraryDependencies += "com.bot4s" %% "telegram-core" % "4.0.0-RC2"
 
@@ -27,5 +29,9 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 libraryDependencies += "commons-codec" % "commons-codec" % "1.9"
 
 libraryDependencies += "org.apache.commons" % "commons-collections4" % "4.1"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+
+logBuffered in Test := false
 
 enablePlugins(JavaAppPackaging)
