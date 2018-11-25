@@ -28,22 +28,21 @@ The bot itself is a single process.
 You need to create your database, and seed it with whatever you want.
 
 ```
-Generates wikileak links and trolls your channel:
+Generate memes and troll your channel:
 
- /start | /help - list commands
-
- @MnemeBot meme search
-
+ /help - list commands
+ /create top_text,bottom_text,image - generates a meme.  The image can be a tag or a url
+ /add tag image_url - adds a new image to meme repo
+ /list - lists meme tags
+ /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
+ /del key - remove key from scrubber
+ /dump prints out known keys in the message scrubber
+ /podesta args | /pod args - generate link to search podestra emails
  /hrc args - generate link to search hrc emails
 
- /dump prints out known keys in the message scrubber
-
- /del key - remove key from scrubber
-
- /add key:response - adds new key,values to match against when searching messages (include urls and links to menes)
-
- /podesta args | /pod args - generate link to search podestra emails
-
+ Inline Options:
+ @MnemeBot create - give a quick link to have a private chat with the bot
+ @MnemeBot list - prints images and tags for creating memes
 ```
 
 Note: using key:response in the /add verses using space delim like `/add key response` is significant.  It allows you to associate many words with a response at once.  `/add red orange blue:So you like colors?` . A string with red, orange, or blue in the message would cause your response to be found.

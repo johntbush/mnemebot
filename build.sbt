@@ -32,6 +32,8 @@ libraryDependencies += "org.apache.commons" % "commons-collections4" % "4.1"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
+libraryDependencies += "org.dispatchhttp" %% "dispatch-core" % "1.0.0"
+
 logBuffered in Test := false
 
 enablePlugins(JavaAppPackaging)

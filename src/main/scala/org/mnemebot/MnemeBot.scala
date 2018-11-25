@@ -5,9 +5,11 @@ import akka.http.scaladsl.model.Uri.Query
 import com.bot4s.telegram.Implicits._
 import com.bot4s.telegram.api.Polling
 import com.bot4s.telegram.api.declarative.{Commands, InlineQueries}
-import com.bot4s.telegram.methods.ParseMode
-import com.bot4s.telegram.models._
+import com.bot4s.telegram.methods.{ParseMode, SendMessage}
+import com.bot4s.telegram.models.{InputMessageContent, _}
 import org.apache.commons.codec.digest.DigestUtils
+import scala.concurrent.duration._
+import scala.concurrent.Await
 
 /**
   * Let me annoy the shit out of you and everyone on this channel
@@ -24,29 +26,32 @@ class MnemeBot(token: String) extends ExampleBot(token)
     InlineKeyboardButton.url("Search Podestra email", podestaEmail(query)))
 
 
-  def help() = {
-    s"""Generates wikileak links and trolls your channel
+  def helpText() = {
+    s"""```
+       |Generate memes and troll your channel:
        |
-       | /start | /help - list commands
-       |
+       | /help - list commands
+       | /create top_text,bottom_text,image - generates a meme
+       | /add tag image_url - adds a new image to meme repo
+       | /list - lists meme tags
+       | /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
+       | /del key - remove key from scrubber
+       | /dump prints out known keys in the message scrubber
+       | /podesta args | /pod args - generate link to search podestra emails
        | /hrc args - generate link to search hrc emails
        |
-       | /dump prints out known keys in the message scrubber
-       |
-       | /del key - remove key from scrubber
-       |
-       | /add key:response - adds new key,values to match against when searching messages (include urls and links to menes)
-       |
-       | /podesta args | /pod args - generate link to search podestra emails
-       |
-       | @MnemeBot meme search
+       | Inline Options:
+       | @MnemeBot create
+       | @MnemeBot list
+       |```
       """.stripMargin
   }
 
   onCommand('start | 'help) { implicit msg =>
     reply(
-      help(),
-      parseMode = ParseMode.Markdown)
+      helpText(),
+      parseMode = ParseMode.Markdown
+    )
   }
 
   onCommand('dump){ implicit msg =>
@@ -83,31 +88,55 @@ class MnemeBot(token: String) extends ExampleBot(token)
     }
   }
 
-
   onMessage { implicit msg =>
-    if (msg.text.isDefined) {
-      MessageResponder.getRandomResponse(msg.text.get).map(response =>
-        reply(response)
-      )
-    }
+    if (msg.text.isDefined)
+        MessageResponder.getRandomResponse(msg.text.get).map(response =>
+          reply(response)
+        )
   }
 
   onCommand('bill) { implicit msg =>
     reply("bill is a rapist")
   }
 
+  onCommand('create) { implicit msg =>
+    val response =
+      MemeGenerator
+      .getMemeUrlFromMessage(msg.text.get)
+      .fold("unable to make your meme, maybe your image tag is wrong, try /list")(url =>s"""[your meme's link](${url})""")
+    reply(
+      text = response,
+      parseMode = ParseMode.Markdown)
+  }
+
+  onCommand('list) { implicit msg =>
+    MemeService.getAllMemeImages().foreach { memeImage =>
+      reply(
+        text = s"[${memeImage.tag}‌‌](${memeImage.url})",
+        parseMode = ParseMode.Markdown)
+    }
+  }
+
+  onCommand('tadd) { implicit msg =>
+    if (msg.text.isDefined) {
+      val args = msg.text.get.replaceFirst("/tadd","").trim()
+      val data = args.split(":")
+      MessageResponder.addTroll(data(0), data.tail.mkString(""), msg.from.flatMap(_.username))
+    }
+  }
+
   onCommand('add) { implicit msg =>
     if (msg.text.isDefined) {
       val args = msg.text.get.replaceFirst("/add","").trim()
-      val data = args.split(":")
-      MessageResponder.add(data(0), data.tail.mkString(""), msg.from.flatMap(_.username))
+      val data = args.split(" ")
+      MemeService.add(data(0), data.tail.mkString(" "), msg.from.flatMap(_.username))
     }
   }
+
 
   onCommand('hrc) { implicit msg =>
     withArgs { args =>
       val query = "Search Hillary's email for: "+ args.mkString(" ")
-
       replyMd(
         query.altWithUrl(hrcEmail(query)),
         disableWebPagePreview = true
@@ -126,21 +155,59 @@ class MnemeBot(token: String) extends ExampleBot(token)
       .toString()
 
 
-  onInlineQuery { implicit iq =>
-    val query = iq.query
 
-    if (query.isEmpty)
-      answerInlineQuery(Seq())
+  def parseCreateMessage(query:String):Option[CreateCommand] = {
+    if (!query.startsWith("create"))
+      None
+    else if (query.isEmpty || !query.contains(" ") || !query.contains(","))
+      None
     else {
-      val results = MemeService.getRandomImages(query).map { image =>
-        InlineQueryResultGif(
-          id = DigestUtils.sha256Hex(image.imageSrc),
-          title = Option(image.title),
-          gifUrl = image.imageSrc,
-          thumbUrl = image.imageSrc,
-        )
-      }
-      answerInlineQuery(results, cacheTime = 1)
+      val piece = query.replaceFirst("create","").trim()
+      val pieces = piece.split(",")
+      Option(CreateCommand(pieces(0).trim, pieces(1).trim, pieces(2).trim))
     }
   }
+
+  onInlineQuery { implicit iq =>
+    val query = iq.query
+    val command = query.split(" ")(0)
+    command match {
+      case "create" =>
+        answerInlineQuery(
+          Seq.empty[InlineQueryResultPhoto],
+          switchPmParameter = Option("create_memes"),
+          switchPmText = Option("create_memes"),
+          cacheTime = 1)
+      case "list" =>
+        answerInlineQuery(MemeService.getAllMemeImages().map { memeImage =>
+          InlineQueryResultPhoto(
+            id = DigestUtils.sha256Hex(memeImage.tag),
+            photoUrl = memeImage.url,
+            thumbUrl = memeImage.url,
+            caption = memeImage.tag,
+            title = memeImage.tag,
+            description = memeImage.tag,
+          )
+        }, cacheTime = 1)
+      case _ =>
+    }
+  }
+
+  def getAnswer(createCommand:CreateCommand): Seq[InlineQueryResultPhoto] ={
+    MemeGenerator.getMemeUrl(createCommand.top, createCommand.bottom, createCommand.urlOrTag)
+      .fold(Seq.empty[InlineQueryResultPhoto]) { url =>
+        Seq(InlineQueryResultPhoto(
+          id = DigestUtils.sha256Hex(createCommand.top + createCommand.bottom + createCommand.urlOrTag),
+          photoUrl = url,
+          thumbUrl = url
+        ))
+      }
+
+  }
 }
+
+
+// @MnemeBot create test a,test b,hillary
+case class CreateCommand(top:String, bottom:String, urlOrTag:String)
+
+

@@ -18,7 +18,7 @@ object MessageResponder {
   val fileName = "message.data"
   val random = new Random
 
-  def add(key:String, value:String, userOpt:Option[String] = None):Unit = {
+  def addTroll(key:String, value:String, userOpt:Option[String] = None):Unit = {
     System.out.println("adding " + key)
     val user = userOpt.getOrElse("")
     sql"insert into troll (tags, message, username, created) values ($key, $value, $user, now())".update.apply()
@@ -47,11 +47,11 @@ object MessageResponder {
   }
 
   def insertDefaultData():Unit = {
-    add("hillary", "Lock her up!")
-    add("bill", "Bill is a rapist!")
-    add("acosta", "Acosta is a jerk!")
-    add("monica", "Where is that cigar!")
-    add("kavanaugh", "I need a beer!")
+    addTroll("hillary", "Lock her up!")
+    addTroll("bill", "Bill is a rapist!")
+    addTroll("acosta", "Acosta is a jerk!")
+    addTroll("monica", "Where is that cigar!")
+    addTroll("kavanaugh", "I need a beer!")
   }
 
   def keys = {
