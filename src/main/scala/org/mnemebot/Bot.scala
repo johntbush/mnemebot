@@ -7,6 +7,7 @@ object Bot extends App  {
     }
     val token = args(0)
     val bot = new MnemeBot(token)
+    SqlConnection.session
     val eol = bot.run()
     println("Running...")
 }
