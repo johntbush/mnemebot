@@ -1,5 +1,6 @@
 package org.mnemebot
 import org.apache.commons.collections4.map.PassiveExpiringMap
+import org.mnemebot.utils.SplitHost
 import scalikejdbc._
 
 import scala.util.Random
@@ -24,25 +25,51 @@ object MessageResponder {
     sql"insert into troll (tags, message, username, created) values ($key, $value, $user, now())".update.apply()
   }
 
+  def addFoe(sld:String, userOpt:Option[String] = None):Unit = {
+    System.out.println("adding " + sld + " to foes")
+    val user = userOpt.getOrElse("")
+    sql"insert into sld_match (sld, friend, username, created) values (${sld.toLowerCase()}, 0, $user, now())".update.apply()
+  }
+
   def getRandomElement(list: Seq[String], random: Random = random): String = list(random.nextInt(list.length))
 
   def getAllTrolls(msg:String) = {
     sql"select id, message, tags from troll where match(tags) against ($msg IN NATURAL LANGUAGE MODE)".map(rs => Troll(rs)).list.apply()
   }
 
+  def urlFilter(text:String) = {
+    // if it contains a url and match foe return true
+    // else false
+    val urls = SplitHost.extractDomains(text)
+    if (urls.isEmpty)
+      true
+    else
+      getFoes().intersect(SplitHost.extractDomains(text)).nonEmpty
+  }
+
   def getRandomResponse(msg:String) = {
     Random
       .shuffle(getAllTrolls(msg))
       .headOption
-      .filter( troll => !recentTrolls.containsKey(troll.id))
+      .filter( troll => !recentTrolls.containsKey(troll.id) && urlFilter(msg))
       .map { troll =>
         recentTrolls.put(troll.id, troll)
         troll.message
       }
   }
 
+  //TODO cache
+  def getFoes() ={
+    sql"select sld from sld_match where friend=0".map(rs => rs.string(1)).list.apply()
+  }
+
+  def getFriends() ={
+    sql"select sld from sld_match where friend=1".map(rs => rs.string(1)).list.apply()
+  }
+
   def reset() = {
     sql"truncate troll".update().apply()
+    sql"truncate sld_match".update().apply()
     insertDefaultData()
   }
 

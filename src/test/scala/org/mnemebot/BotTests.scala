@@ -3,7 +3,7 @@ package org.mnemebot
 import org.scalatest.FunSuite
 import scalikejdbc._
 
-class MyTests extends FunSuite {
+class BotTests extends FunSuite {
   implicit val session = SqlConnection.session
 
   test("basic MessageResponder test") {
@@ -48,6 +48,25 @@ class MyTests extends FunSuite {
     assert(MemeService.tagExists("cortez2"))
     assert(MemeGenerator.getMemeUrlFromMessage(
       "/create text1,text2,cortez").getOrElse("") == "https://memegen.link/custom/text1/text2.jpg?alt=http://www.themainewire.com/wp-content/uploads/2018/08/Alexandria.jpg")
+  }
+
+  test("foe"){
+    val memeBot= new MnemeBot("asdf")
+    MessageResponder.reset()
+    MessageResponder.addFoe("cnn")
+    MessageResponder.addFoe("msnbc")
+    val foes = MessageResponder.getFoes()
+    assert(foes.size == 2)
+    assert(foes.contains("cnn"))
+    assert(foes.contains("msnbc"))
+    assert(MessageResponder.urlFilter("asdf http://www.cnn.com qwera qweer"))
+    assert(!MessageResponder.urlFilter("asdf http://www.breitbart.com qwera qweer"))
+
+    MessageResponder.addTroll("cnn","fake news!")
+
+    assert(MessageResponder.getRandomResponse("asdf asdf https://www.cnn.com/2018/12/01/politics/george-h-w-bush-dead/index.html asdfasdf ").get.equals("fake news!"))
+    assert(MessageResponder.getRandomResponse("asdf asdf https://www.breitbart.com/politics/2018/12/01/political-world-pays-tribute-to-george-h-w-bush/ asdfasdf ").isEmpty)
+
   }
 
   test("test meme create"){

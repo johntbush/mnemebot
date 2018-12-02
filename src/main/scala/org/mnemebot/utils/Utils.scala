@@ -1,4 +1,4 @@
-package org.mnemebot
+package org.mnemebot.utils
 
 import dispatch._, Defaults._
 

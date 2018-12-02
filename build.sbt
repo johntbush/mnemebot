@@ -34,6 +34,9 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.dispatchhttp" %% "dispatch-core" % "1.0.0"
 
+// https://mvnrepository.com/artifact/com.google.guava/guava
+libraryDependencies += "com.google.guava" % "guava" % "12.0"
+
 logBuffered in Test := false
 
 enablePlugins(JavaAppPackaging)

@@ -33,6 +33,7 @@ class MnemeBot(token: String) extends ExampleBot(token)
        | /help - list commands
        | /create top_text,bottom_text,image - generates a meme
        | /add tag image_url - adds a new image to meme repo
+       | /fadd domain - adds a new domain to foe list
        | /list - lists meme tags
        | /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
        | /del key - remove key from scrubber
@@ -114,6 +115,13 @@ class MnemeBot(token: String) extends ExampleBot(token)
       reply(
         text = s"[${memeImage.tag}‌‌](${memeImage.url})",
         parseMode = ParseMode.Markdown)
+    }
+  }
+
+  onCommand('fadd) { implicit msg =>
+    if (msg.text.isDefined) {
+      val args = msg.text.get.replaceFirst("/fadd","").trim()
+      MessageResponder.addFoe(args, msg.from.flatMap(_.username))
     }
   }
 
