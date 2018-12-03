@@ -27,6 +27,12 @@ class BotTests extends FunSuite {
     assert(MessageResponder.getRandomResponse("monica").isEmpty)
   }
 
+  test("mood") {
+    MessageResponder.addTroll("black","amen, African American...", -1)
+    assert(MessageResponder.getRandomResponse("jew, black guy, and pope walk into a bar...").isDefined)
+    assert(Mood.currentLevel == -1)
+  }
+
   test("test lookups with the MemeService") {
     MemeService.reset()
 
@@ -62,7 +68,7 @@ class BotTests extends FunSuite {
     assert(MessageResponder.urlFilter("asdf http://www.cnn.com qwera qweer"))
     assert(!MessageResponder.urlFilter("asdf http://www.breitbart.com qwera qweer"))
 
-    MessageResponder.addTroll("cnn","fake news!")
+    MessageResponder.addTroll("cnn","fake news!", -1)
 
     assert(MessageResponder.getRandomResponse("asdf asdf https://www.cnn.com/2018/12/01/politics/george-h-w-bush-dead/index.html asdfasdf ").get.equals("fake news!"))
     assert(MessageResponder.getRandomResponse("asdf asdf https://www.breitbart.com/politics/2018/12/01/political-world-pays-tribute-to-george-h-w-bush/ asdfasdf ").isEmpty)

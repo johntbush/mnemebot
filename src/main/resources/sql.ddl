@@ -37,12 +37,19 @@ create table troll (
   id MEDIUMINT NOT NULL AUTO_INCREMENT,
   tags text not null,
   message text,
+  mood int default 0,
   username varchar(255),
   created DATETIME default now(),
   primary KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-
 CREATE FULLTEXT INDEX troll_tags ON troll (tags);
 
+create table mood_trigger (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT,
+  mood_level int default 0,
+  trigger_text text,
+  username varchar(255),
+  created DATETIME default now(),
+  primary key(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

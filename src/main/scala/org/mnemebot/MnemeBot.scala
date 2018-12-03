@@ -3,21 +3,24 @@ package org.mnemebot
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
 import com.bot4s.telegram.Implicits._
-import com.bot4s.telegram.api.Polling
 import com.bot4s.telegram.api.declarative.{Commands, InlineQueries}
-import com.bot4s.telegram.methods.{ParseMode, SendMessage}
-import com.bot4s.telegram.models.{InputMessageContent, _}
+import com.bot4s.telegram.api.{Polling, RequestHandler, TelegramBot}
+import com.bot4s.telegram.clients.SttpClient
+import com.bot4s.telegram.methods.ParseMode
+import com.bot4s.telegram.models._
 import org.apache.commons.codec.digest.DigestUtils
-import scala.concurrent.duration._
-import scala.concurrent.Await
+
 
 /**
   * Let me annoy the shit out of you and everyone on this channel
   */
-class MnemeBot(token: String) extends ExampleBot(token)
+class MnemeBot(token: String) extends TelegramBot
   with Polling
   with InlineQueries
   with Commands {
+
+  implicit val backend = SttpBackends.default
+  override val client: RequestHandler = new SttpClient(token)
 
   def hrcBtn(query: String): InlineKeyboardMarkup = InlineKeyboardMarkup.singleButton(
     InlineKeyboardButton.url("Search HRC email", hrcEmail(query)))
@@ -25,17 +28,17 @@ class MnemeBot(token: String) extends ExampleBot(token)
   def podestaBtn(query: String): InlineKeyboardMarkup = InlineKeyboardMarkup.singleButton(
     InlineKeyboardButton.url("Search Podestra email", podestaEmail(query)))
 
-
   def helpText() = {
     s"""```
        |Generate memes and troll your channel:
        |
        | /help - list commands
        | /create top_text,bottom_text,image - generates a meme
+       | /check - checks the bots mood
        | /add tag image_url - adds a new image to meme repo
        | /fadd domain - adds a new domain to foe list
-       | /list - lists meme tags
        | /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
+       | /list - lists meme tags
        | /del key - remove key from scrubber
        | /dump prints out known keys in the message scrubber
        | /podesta args | /pod args - generate link to search podestra emails
@@ -60,6 +63,13 @@ class MnemeBot(token: String) extends ExampleBot(token)
       MessageResponder.keys.toString(),
       parseMode = ParseMode.Markdown)
   }
+
+  onCommand('check){ implicit msg =>
+    reply(
+      Mood.report,
+      parseMode = ParseMode.Markdown)
+  }
+
   onCommand('del){ implicit msg =>
     val key = msg.text.get.replaceFirst("/del","").trim()
     reply(
@@ -81,7 +91,6 @@ class MnemeBot(token: String) extends ExampleBot(token)
   onCommand('search) { implicit msg =>
     withArgs { args =>
       val query = "Search Podesta's email for: " + args.mkString(" ")
-
       replyMd(
         query.altWithUrl(podestaEmail(query)),
         disableWebPagePreview = true
@@ -90,10 +99,21 @@ class MnemeBot(token: String) extends ExampleBot(token)
   }
 
   onMessage { implicit msg =>
+    val preMood = Mood.currentLevel
+
     if (msg.text.isDefined)
-        MessageResponder.getRandomResponse(msg.text.get).map(response =>
-          reply(response)
-        )
+        MessageResponder.getRandomResponse(msg.text.get)
+          .map(response => reply(response))
+
+    if (Mood.currentLevel < preMood) {
+      Mood.getRandomTrigger(Mood.currentMood)
+        .map { trigger =>
+          val userName = msg.from.fold(None:Option[String])(_.username)
+          reply(userName.fold(trigger.message)(username => s"@$username, " + trigger.message))
+        }
+      if (Mood.isTriggered)
+        Mood.reset
+    }
   }
 
   onCommand('bill) { implicit msg =>
@@ -129,7 +149,7 @@ class MnemeBot(token: String) extends ExampleBot(token)
     if (msg.text.isDefined) {
       val args = msg.text.get.replaceFirst("/tadd","").trim()
       val data = args.split(":")
-      MessageResponder.addTroll(data(0), data.tail.mkString(""), msg.from.flatMap(_.username))
+      MessageResponder.addTroll(data(0), data.tail.mkString(""), 0, msg.from.flatMap(_.username))
     }
   }
 
@@ -140,7 +160,6 @@ class MnemeBot(token: String) extends ExampleBot(token)
       MemeService.add(data(0), data.tail.mkString(" "), msg.from.flatMap(_.username))
     }
   }
-
 
   onCommand('hrc) { implicit msg =>
     withArgs { args =>
@@ -161,8 +180,6 @@ class MnemeBot(token: String) extends ExampleBot(token)
     Uri("https://wikileaks.org/clinton-emails")
       .withQuery(Query("q" -> query))
       .toString()
-
-
 
   def parseCreateMessage(query:String):Option[CreateCommand] = {
     if (!query.startsWith("create"))
@@ -213,7 +230,6 @@ class MnemeBot(token: String) extends ExampleBot(token)
 
   }
 }
-
 
 // @MnemeBot create test a,test b,hillary
 case class CreateCommand(top:String, bottom:String, urlOrTag:String)
