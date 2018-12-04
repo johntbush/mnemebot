@@ -99,13 +99,13 @@ class MnemeBot(token: String) extends TelegramBot
   }
 
   onMessage { implicit msg =>
-    val preMood = Mood.currentLevel
+    val preMood = Mood.currentMood
 
     if (msg.text.isDefined)
         MessageResponder.getRandomResponse(msg.text.get)
           .map(response => reply(response))
 
-    if (Mood.currentLevel < preMood) {
+    if (Mood.moodAsInt(Mood.currentMood) < Mood.moodAsInt(preMood)) {
       Mood.getRandomTrigger(Mood.currentMood)
         .map { trigger =>
           val userName = msg.from.fold(None:Option[String])(_.username)
