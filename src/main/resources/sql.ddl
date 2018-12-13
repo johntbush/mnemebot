@@ -53,3 +53,12 @@ create table mood_trigger (
   created DATETIME default now(),
   primary key(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table trigger_log (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT,
+  username varchar(255),
+  created DATETIME default now(),
+  mood_level INT default 0,
+  is_trigger BIT default 0,
+  primary key(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

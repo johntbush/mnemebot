@@ -6,7 +6,7 @@ import com.bot4s.telegram.Implicits._
 import com.bot4s.telegram.api.declarative.{Commands, InlineQueries}
 import com.bot4s.telegram.api.{Polling, RequestHandler, TelegramBot}
 import com.bot4s.telegram.clients.SttpClient
-import com.bot4s.telegram.methods.ParseMode
+import com.bot4s.telegram.methods.{ParseMode, SendMessage}
 import com.bot4s.telegram.models._
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -100,19 +100,44 @@ class MnemeBot(token: String) extends TelegramBot
 
   onMessage { implicit msg =>
     val preMood = Mood.currentMood
+    val preMoodLevel = Mood.currentLevel
+    val userName = msg.from.fold(None:Option[String])(_.username)
 
     if (msg.text.isDefined)
         MessageResponder.getRandomResponse(msg.text.get)
           .map(response => reply(response))
 
+    val moodLevelDiff = Mood.currentLevel - preMoodLevel
+    if (moodLevelDiff != 0 && userName.isDefined)
+      Mood.logTrigger(userName.get, moodLevelDiff)
+
     if (Mood.moodAsInt(Mood.currentMood) < Mood.moodAsInt(preMood)) {
       Mood.getRandomTrigger(Mood.currentMood)
         .map { trigger =>
-          val userName = msg.from.fold(None:Option[String])(_.username)
           reply(userName.fold(trigger.message)(username => s"@$username, " + trigger.message))
         }
       if (Mood.isTriggered)
         Mood.reset
+    }
+  }
+
+  onCommand('score) { implicit msg =>
+    val report = Mood.getReport().map{ case (k,v) =>
+      s"$k: $v points"
+    }.mkString("\n")
+    reply(report)
+  }
+
+  onCommand("say") { implicit msg =>
+    if (msg.text.isDefined) {
+      val text = msg.text.get.replaceFirst("/say", "").trim()
+
+      request(
+        SendMessage(
+          ChatId("-193800649"),
+          text
+        )
+      )
     }
   }
 

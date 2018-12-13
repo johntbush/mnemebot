@@ -93,6 +93,24 @@ object Mood {
     def apply(rs: WrappedResultSet) = new MoodTrigger(
       rs.int("id"), rs.int("mood_level"), rs.string("trigger_text"))
   }
+
+  case class TriggerLog(id: Int, mood:Int, username: String, isTrigger: Boolean)
+  object TriggerLog extends SQLSyntaxSupport[TriggerLog] {
+    override val tableName = "trigger_log"
+    def apply(rs: WrappedResultSet) = new TriggerLog(
+      rs.int("id"), rs.int("mood_level"), rs.string("username"), rs.boolean("is_trigger"))
+  }
+
+  def logTrigger(user:String, mood:Int) = {
+    sql"insert into trigger_log (mood_level, username, created) values ($mood, $user, now())".update.apply
+  }
+
+  def getReport(): Map[String, Int] = {
+    sql"select username, sum(mood_level) as total from trigger_log group by username".map {
+      rs => (rs.string("username"), rs.int("total"))
+    }.list.apply().toMap
+  }
+
 }
 
 
