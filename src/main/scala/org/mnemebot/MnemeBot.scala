@@ -39,6 +39,8 @@ class MnemeBot(token: String) extends TelegramBot
        | /fadd domain - adds a new domain to foe list
        | /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
        | /list - lists meme tags
+       | /say - use in private chat with bot, to post messages in group channel
+       | /score duration - day, month, all (default).  Shows points per user.
        | /del key - remove key from scrubber
        | /dump prints out known keys in the message scrubber
        | /podesta args | /pod args - generate link to search podestra emails
@@ -101,7 +103,7 @@ class MnemeBot(token: String) extends TelegramBot
   onMessage { implicit msg =>
     val preMood = Mood.currentMood
     val preMoodLevel = Mood.currentLevel
-    val userName = msg.from.fold(None:Option[String])(_.username)
+    val userName = msg.from.fold(None:Option[String])(_.username).fold(Option(msg.from.get.firstName + msg.from.get.lastName))(Option(_))
 
     if (msg.text.isDefined)
         MessageResponder.getRandomResponse(msg.text.get)
@@ -122,10 +124,20 @@ class MnemeBot(token: String) extends TelegramBot
   }
 
   onCommand('score) { implicit msg =>
-    val report = Mood.getReport().map{ case (k,v) =>
-      s"$k: $v points"
-    }.mkString("\n")
-    reply(report)
+    if (msg.text.isDefined) {
+      val text = msg.text.get.replaceFirst("/score", "").trim()
+      val duration = if (text.length == 0) "all" else text
+      logger.info(s"duration:$duration")
+      val scores = duration match {
+        case "day" => Mood.getReport(ScoreDurations.DAY)
+        case "month" => Mood.getReport(ScoreDurations.MONTH)
+        case _ => Mood.getReport()
+      }
+      val report = scores.map { case (k, v) =>
+        s"$k: $v points"
+      }.mkString("\n")
+      reply(report)
+    }
   }
 
   onCommand("say") { implicit msg =>

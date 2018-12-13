@@ -2,6 +2,7 @@ package org.mnemebot
 
 import org.mnemebot.MessageResponder.getAllTrolls
 import org.mnemebot.Moods._
+import org.mnemebot.ScoreDurations.ScoreDuration
 import scalikejdbc.WrappedResultSet
 import scalikejdbc._
 
@@ -105,14 +106,32 @@ object Mood {
     sql"insert into trigger_log (mood_level, username, created) values ($mood, $user, now())".update.apply
   }
 
-  def getReport(): Map[String, Int] = {
-    sql"select username, sum(mood_level) as total from trigger_log group by username".map {
-      rs => (rs.string("username"), rs.int("total"))
-    }.list.apply().toMap
+  def getReport(scoreDuration: ScoreDuration = ScoreDurations.ALL): Map[String, Int] = {
+    val scores = scoreDuration match {
+      case ScoreDurations.DAY =>
+        sql"select username, sum(mood_level) as total from trigger_log where created > CURDATE() AND created <= CURDATE() + INTERVAL 1 DAY group by username".map {
+          rs => (rs.string("username"), rs.int("total"))
+        }
+      case ScoreDurations.MONTH =>
+        sql"select username, sum(mood_level) as total from trigger_log where created > CURDATE() - INTERVAL 1 MONTH AND created <= CURDATE() + INTERVAL 1 MONTH  group by username".map {
+          rs => (rs.string("username"), rs.int("total"))
+        }
+      case ScoreDurations.ALL =>
+        sql"select username, sum(mood_level) as total from trigger_log group by username".map {
+          rs => (rs.string("username"), rs.int("total"))
+        }
+    }
+    scores.list.apply().toMap
   }
 
 }
 
+object ScoreDurations {
+  sealed trait ScoreDuration
+  case object DAY extends ScoreDuration
+  case object ALL extends ScoreDuration
+  case object MONTH extends ScoreDuration
+}
 
 object Moods {
   sealed trait MoodVal
