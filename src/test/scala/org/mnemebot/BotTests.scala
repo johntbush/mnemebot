@@ -27,6 +27,14 @@ class BotTests extends FunSuite {
     assert(MessageResponder.getRandomResponse("monica").isEmpty)
   }
 
+  test("test MessageResponder fuzzy search") {
+    MessageResponder.reset()
+    assert(MessageResponder.getRandomResponse("monoca").isDefined)
+    MessageResponder.addTroll("monica","blah")
+    assert(MessageResponder.getRandomResponse("monoc").isDefined)
+
+  }
+
   test("mood") {
     MessageResponder.addTroll("black","amen, African American...", -1)
     assert(MessageResponder.getRandomResponse("jew, black guy, and pope walk into a bar...").isDefined)

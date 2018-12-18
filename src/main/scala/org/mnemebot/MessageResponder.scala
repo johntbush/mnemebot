@@ -32,7 +32,25 @@ object MessageResponder extends LazyLogging {
   }
 
   def getAllTrolls(msg:String) = {
-    sql"select id, message, tags, mood from troll where match(tags) against ($msg IN NATURAL LANGUAGE MODE)".map(rs => Troll(rs)).list.apply()
+    val results = sql"select id, message, tags, mood from troll where match(tags) against ($msg IN NATURAL LANGUAGE MODE)".map(rs => Troll(rs)).list.apply()
+    if (results.nonEmpty) {
+      results
+    } else {
+      val words = msg.split("\\s+")
+      sql"select id, message, tags, mood from troll"
+        .map(rs => Troll(rs))
+        .list
+        .apply
+        .filter { troll =>
+          val tags = troll.tags.split("\\s+")
+          tags.exists { tag =>
+            words.exists( word =>
+              (word.length >= 5 && FuzzyMatch.isMatch(word, tag, 1)) ||
+              (word.length >= 8 && FuzzyMatch.isMatch(word, tag, 2))
+            )
+          }
+        }
+    }
   }
 
   def urlFilter(text:String) = {
