@@ -31,14 +31,19 @@ You need to create your database, and seed it with whatever you want.
 Generate memes and troll your channel:
 
  /help - list commands
- /create top_text,bottom_text,image - generates a meme.  The image can be a tag or a url
+ /create top_text,bottom_text,image - generates a meme
+ /check - checks the bots mood
  /add tag image_url - adds a new image to meme repo
- /list - lists meme tags
+ /fadd domain - adds a new domain to foe list
  /tadd key:response - adds new key,values to match against when searching messages (include urls and links to menes)
+ /list - lists meme tags
+ /say - use in private chat with bot, to post messages in group channel
+ /score duration - day, month, all (default).  Shows points per user.
  /del key - remove key from scrubber
  /dump prints out known keys in the message scrubber
  /podesta args | /pod args - generate link to search podestra emails
  /hrc args - generate link to search hrc emails
+
 
  Inline Options:
  @MnemeBot create - give a quick link to have a private chat with the bot
